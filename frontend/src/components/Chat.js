@@ -6,6 +6,7 @@ import UsersList from './UsersList';
 import { debounce } from 'lodash';
 import { Send, X, Smile, Paperclip, ChevronDown, MoreVertical } from 'lucide-react';
 
+
 const socket = io('http://localhost:5000', {
   reconnectionAttempts: 5,
   reconnectionDelay: 1000,

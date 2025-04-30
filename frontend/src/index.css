@@ -16,41 +16,25 @@ code {
     monospace;
 }
 
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
-
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-.clip-path-bubble-tail-right {
-  clip-path: polygon(0 0, 100% 0, 100% 100%);
-}
-
-.clip-path-bubble-tail-left {
-  clip-path: polygon(0 0, 100% 0, 0 100%);
-}
-
-.scrollbar-thin::-webkit-scrollbar {
+/* Custom scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
   width: 6px;
-  height: 6px;
 }
 
-.scrollbar-thin::-webkit-scrollbar-track {
-  background: transparent;
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
 }
 
-.scrollbar-thin::-webkit-scrollbar-thumb {
-  background-color: rgba(155, 155, 155, 0.3);
-  border-radius: 20px;
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #c5c5c5;
+  border-radius: 3px;
 }
 
-.scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(155, 155, 155, 0.5);
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
 }
 
+/* Message bubble animations */
 .message-bubble {
   animation: fadeInUp 0.3s ease-out forwards;
 }
@@ -66,6 +50,7 @@ code {
   }
 }
 
+/* Typing indicator animation */
 .typing-dot {
   animation: typingDot 1.4s infinite;
 }
@@ -87,10 +72,7 @@ code {
   }
 }
 
-.status-icon {
-  transition: all 0.3s ease;
-}
-
+/* Online status pulse animation */
 .user-online {
   box-shadow: 0 0 0 rgba(72, 187, 120, 0.4);
   animation: pulse 2s infinite;
@@ -108,23 +90,16 @@ code {
   }
 }
 
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
+/* Bubble tail shapes */
+.clip-path-bubble-tail-right {
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
 }
 
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: #f1f1f1;
+.clip-path-bubble-tail-left {
+  clip-path: polygon(0 0, 100% 0, 0 100%);
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #c5c5c5;
-  border-radius: 3px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
-}
-
+/* Tooltip styles */
 .tooltip {
   position: relative;
   display: inline-block;
@@ -150,4 +125,14 @@ code {
 .tooltip:hover .tooltip-text {
   visibility: visible;
   opacity: 1;
+}
+
+/* Emoji picker positioning */
+.emoji-picker-react {
+  position: absolute !important;
+  bottom: 60px !important;
+  left: 10px !important;
+  width: 300px !important;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1) !important;
+  border-radius: 10px !important;
 }
