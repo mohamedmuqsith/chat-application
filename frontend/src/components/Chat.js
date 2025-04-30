@@ -4,8 +4,8 @@ import io from 'socket.io-client';
 import Message from './Message';
 import UsersList from './UsersList';
 import { debounce } from 'lodash';
-import { Send, X, Smile, Paperclip, ChevronDown, MoreVertical } from 'lucide-react';
-
+import { Send, X, Smile, Paperclip, ChevronDown, MoreVertical, File } from 'lucide-react';
+import EmojiPicker from 'emoji-picker-react';
 
 const socket = io('http://localhost:5000', {
   reconnectionAttempts: 5,
@@ -23,6 +23,8 @@ function Chat({ username, room }) {
   const [editingMessageId, setEditingMessageId] = useState(null);
   const [editContent, setEditContent] = useState('');
   const [userStatus, setUserStatus] = useState('online');
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [filePreview, setFilePreview] = useState(null);
   const messagesEndRef = useRef(null);
   const messagesContainerRef = useRef(null);
 
@@ -57,6 +59,11 @@ function Chat({ username, room }) {
     debouncedTypingStatus(e.target.value.length > 0);
   };
 
+  const onEmojiClick = (emojiObject) => {
+    setMessageInput(prev => prev + emojiObject.emoji);
+    setShowEmojiPicker(false);
+  };
+
   const sendMessage = (e) => {
     e.preventDefault();
     if (!messageInput.trim()) return;
@@ -67,6 +74,11 @@ function Chat({ username, room }) {
       room,
       replyTo: replyTo || null
     };
+
+    if (filePreview) {
+      messageData.file = filePreview;
+      setFilePreview(null);
+    }
 
     socket.emit('send_message', messageData);
     setMessageInput('');
@@ -133,8 +145,57 @@ function Chat({ username, room }) {
     return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
-  const formatDate = (timestamp) => {
-    return new Date(timestamp).toLocaleDateString([], { month: 'short', day: 'numeric' });
+  const formatMessageDate = (timestamp) => {
+    const today = new Date();
+    const messageDate = new Date(timestamp);
+    
+    if (messageDate.toDateString() === today.toDateString()) {
+      return 'Today';
+    }
+    
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    if (messageDate.toDateString() === yesterday.toDateString()) {
+      return 'Yesterday';
+    }
+    
+    return messageDate.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric',
+      year: messageDate.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
+    });
+  };
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size should be less than 5MB');
+      return;
+    }
+
+    // Create preview for images
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setFilePreview({
+          url: event.target.result,
+          name: file.name,
+          type: file.type
+        });
+      };
+      reader.readAsDataURL(file);
+    } else {
+      // For other file types
+      setFilePreview({
+        name: file.name,
+        type: file.type,
+        size: file.size
+      });
+    }
   };
 
   useEffect(() => {
@@ -284,11 +345,11 @@ function Chat({ username, room }) {
 
   // Group messages by date
   const groupedMessages = messages.reduce((acc, message) => {
-    const date = formatDate(message.timestamp);
-    if (!acc[date]) {
-      acc[date] = [];
+    const dateKey = formatMessageDate(message.timestamp);
+    if (!acc[dateKey]) {
+      acc[dateKey] = [];
     }
-    acc[date].push(message);
+    acc[dateKey].push(message);
     return acc;
   }, {});
 
@@ -372,7 +433,7 @@ function Chat({ username, room }) {
         >
           <div className="container max-w-3xl mx-auto space-y-4">
             {Object.entries(groupedMessages).map(([date, dateMessages]) => (
-              <div key={date}>
+              <React.Fragment key={date}>
                 <div className="flex items-center my-4">
                   <div className="flex-1 border-t border-gray-200"></div>
                   <div className="px-3 text-xs text-gray-500 rounded-full bg-gray-50">
@@ -398,7 +459,6 @@ function Chat({ username, room }) {
                             markMessageAsSeen(message._id);
                           }
                         }}
-                        className="message-bubble"
                       >
                         <Message 
                           message={message}
@@ -417,7 +477,7 @@ function Chat({ username, room }) {
                     )}
                   </div>
                 ))}
-              </div>
+              </React.Fragment>
             ))}
             
             {messages.length === 0 && (
@@ -472,14 +532,70 @@ function Chat({ username, room }) {
               </button>
             </div>
           )}
+
+          {filePreview && (
+            <div className="relative p-3 mb-2 rounded-lg bg-indigo-50">
+              {filePreview.type.startsWith('image/') ? (
+                <img 
+                  src={filePreview.url} 
+                  alt="Preview" 
+                  className="object-cover rounded max-h-40"
+                />
+              ) : (
+                <div className="flex items-center">
+                  <File size={20} className="mr-2 text-indigo-500" />
+                  <div>
+                    <p className="text-sm font-medium">{filePreview.name}</p>
+                    <p className="text-xs text-gray-500">
+                      {Math.round(filePreview.size / 1024)} KB
+                    </p>
+                  </div>
+                </div>
+              )}
+              <button
+                onClick={() => setFilePreview(null)}
+                className="absolute p-1 text-gray-500 rounded-full top-1 right-1 hover:text-red-500"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          )}
           
           <form onSubmit={sendMessage} className="flex items-center px-3 py-2 bg-gray-50 rounded-xl focus-within:ring-2 focus-within:ring-indigo-500 focus-within:bg-white">
-            <button type="button" className="p-2 text-gray-500 rounded-full hover:text-indigo-600">
+            {showEmojiPicker && (
+              <div className="absolute z-10 bottom-16 left-4">
+                <EmojiPicker 
+                  onEmojiClick={onEmojiClick}
+                  width={300}
+                  height={350}
+                  previewConfig={{ showPreview: false }}
+                  skinTonesDisabled
+                  searchDisabled
+                />
+              </div>
+            )}
+            <button 
+              type="button" 
+              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+              className="p-2 text-gray-500 rounded-full hover:text-indigo-600"
+            >
               <Smile size={20} />
             </button>
-            <button type="button" className="p-2 text-gray-500 rounded-full hover:text-indigo-600">
-              <Paperclip size={20} />
-            </button>
+            <>
+              <input 
+                type="file" 
+                id="file-upload" 
+                className="hidden" 
+                onChange={handleFileUpload}
+                accept="image/*, .pdf, .doc, .docx, .xls, .xlsx"
+              />
+              <label 
+                htmlFor="file-upload" 
+                className="p-2 text-gray-500 rounded-full cursor-pointer hover:text-indigo-600"
+              >
+                <Paperclip size={20} />
+              </label>
+            </>
             <input
               type="text"
               value={messageInput}

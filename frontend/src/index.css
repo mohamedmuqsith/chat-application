@@ -136,3 +136,35 @@ code {
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1) !important;
   border-radius: 10px !important;
 }
+
+
+/* Emoji picker positioning */
+.emoji-picker-react {
+  position: absolute !important;
+  bottom: 60px !important;
+  left: 10px !important;
+  width: 300px !important;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1) !important;
+  border-radius: 10px !important;
+  border: none !important;
+}
+
+/* Context menu styling */
+.context-menu {
+  animation: fadeIn 0.1s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Read receipts */
+.read-receipt-avatar {
+  transition: transform 0.2s;
+}
+
+.read-receipt-avatar:hover {
+  transform: scale(1.2);
+  z-index: 10;
+}
